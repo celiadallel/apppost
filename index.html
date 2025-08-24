@@ -1,271 +1,385 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Coffee Cup Game ☕</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root{
-      --bg:#f7f7fb; --ink:#222; --muted:#6b6f76;
-      --brand:#3a7bd5; --good:#17a673; --bad:#cc3d3d;
-      --cup:#ffffff; --cup-border:#dadde3; --coffee:#6f4e37;
-      --card:#ffffff; --shadow: 0 8px 24px rgba(0,0,0,.08);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
-      color:var(--ink); background:linear-gradient(180deg,#f9fafc, var(--bg));
-      min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px;
-    }
-    .app{
-      width:min(980px,100%); background:var(--card); border-radius:20px; box-shadow:var(--shadow);
-      padding:24px; overflow:hidden;
-    }
-    header{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
-    .title{display:flex; align-items:center; gap:12px}
-    .title h1{font-size:22px; margin:0}
-    .subtitle{color:var(--muted); font-size:14px}
-    .rule{margin:8px 0 0}
-    .actions{display:flex; gap:8px; flex-wrap:wrap}
-    button{
-      appearance:none; border:1px solid #dce0e6; background:#fff; color:var(--ink);
-      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
-    }
-    button.primary{background:var(--brand); color:#fff; border-color:transparent}
-    button.ghost{background:#fff}
-    main{margin-top:20px}
-    .grid{
-      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px;
-    }
-    @media (max-width:720px){ .grid{grid-template-columns:1fr} }
-
-    .card{
-      background:#fff; border:1px solid #eceff3; border-radius:16px; padding:18px;
-      box-shadow:var(--shadow); transition:transform .2s ease, border-color .2s ease;
-    }
-    .card:hover{transform:translateY(-3px); border-color:#dfe3ea}
-    .cup-wrap{display:flex; flex-direction:column; align-items:center; gap:10px}
-    .cup-label{font-weight:700; letter-spacing:.2px}
-    .cup{
-      width:160px; height:120px; border:2px solid var(--cup-border); border-bottom-left-radius:18px; border-bottom-right-radius:18px;
-      border-top-left-radius:12px; border-top-right-radius:12px; position:relative; background:var(--cup);
-      overflow:hidden;
-    }
-    .cup::after{ /* handle */
-      content:""; position:absolute; right:-28px; top:28px; width:46px; height:46px; border:6px solid var(--cup-border);
-      border-radius:50%; background:transparent;
-    }
-    .coffee{
-      position:absolute; inset:auto 0 0 0; height:0%;
-      background:linear-gradient(180deg,#7a553f,#583e2f);
-      transition:height .7s cubic-bezier(.2,.9,.2,1.05);
-    }
-
-    .pick{
-      display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px;
-      font-weight:600; border:1px dashed #e5e8ee; padding:8px 10px; border-radius:10px; color:var(--muted);
-    }
-    .pick kbd{background:#f1f3f7; padding:2px 6px; border-radius:6px; border:1px solid #e4e6eb; font-size:12px}
-    .selected{outline:3px solid rgba(58,123,213,.25)}
-
-    .msg{
-      margin-top:18px; padding:14px; border-radius:12px; background:#f5f8ff; color:#133a72; border:1px solid #d7e3ff;
-      display:none;
-    }
-    .msg.show{display:block}
-    .msg.good{background:#eefaf4; border-color:#c6f0d9; color:#0d5d42}
-    .msg.bad{background:#fff1f1; border-color:#ffd7d7; color:#7a1f1f}
-
-    .shake{animation:shake .35s linear}
-    @keyframes shake { 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} 100%{transform:translateX(0)} }
-
-    .footer{
-      display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:16px; flex-wrap:wrap;
-      color:var(--muted); font-size:13px
-    }
-    .link{color:var(--brand); text-decoration:none; font-weight:600}
-  </style>
+<meta charset="utf-8" />
+<title>Coffee Cup Game ☕ — Plus+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#f7f7fb; --ink:#1f2328; --muted:#6b6f76;
+    --brand:#3a7bd5; --good:#17a673; --bad:#cc3d3d;
+    --cup:#ffffff; --cup-border:#dadde3; --coffee:#6f4e37;
+    --card:#ffffff; --shadow: 0 8px 24px rgba(0,0,0,.08);
+    --accent:#ffba42;
+  }
+  [data-theme="dark"]{
+    --bg:#0f1115; --ink:#e6edf3; --muted:#9aa4af;
+    --brand:#74a0ff; --card:#151922; --cup:#1a2030; --cup-border:#2b3445;
+    --shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+    color:var(--ink); background:linear-gradient(180deg,#f9fafc, var(--bg)); min-height:100dvh;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .app{ width:min(980px,100%); background:var(--card); border-radius:20px; box-shadow:var(--shadow); padding:22px }
+  header{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+  .title{display:flex; align-items:center; gap:10px}
+  .title h1{font-size:20px; margin:0}
+  .meta{display:flex; gap:10px; align-items:center; color:var(--muted); font-size:14px}
+  .pill{border:1px solid #dce0e6; padding:6px 10px; border-radius:999px}
+  .actions{display:flex; gap:8px; flex-wrap:wrap}
+  button, select{
+    appearance:none; border:1px solid #dce0e6; background:#fff; color:var(--ink);
+    padding:9px 12px; border-radius:12px; cursor:pointer; font-weight:600;
+  }
+  [data-theme="dark"] button,[data-theme="dark"] select{ background:#0f131b; border-color:#2b3445; color:var(--ink)}
+  button.primary{background:var(--brand); color:#fff; border-color:transparent}
+  button.ghost{background:transparent}
+  main{margin-top:16px}
+  .rule{margin:8px 0 0; color:var(--muted)}
+  .hud{display:flex; gap:12px; align-items:center; justify-content:space-between; margin:12px 0 8px}
+  .score{font-weight:700}
+  .timer{height:8px; background:#e9edf3; border-radius:999px; overflow:hidden; flex:1}
+  .bar{height:100%; width:100%; background:linear-gradient(90deg,var(--accent),#ff6a3d)}
+  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:#fff; border:1px solid #eceff3; border-radius:16px; padding:16px;
+    box-shadow:var(--shadow); transition:transform .2s ease, border-color .2s ease;
+  }
+  [data-theme="dark"] .card{ background:#0f131b; border-color:#2b3445 }
+  .card:hover{transform:translateY(-3px); border-color:#dfe3ea}
+  .cup-wrap{display:flex; flex-direction:column; align-items:center; gap:8px}
+  .cup-label{font-weight:800; letter-spacing:.2px}
+  .cup{
+    width:160px; height:120px; border:2px solid var(--cup-border); border-bottom-left-radius:18px; border-bottom-right-radius:18px;
+    border-top-left-radius:12px; border-top-right-radius:12px; position:relative; background:var(--cup); overflow:hidden;
+  }
+  .cup::after{ content:""; position:absolute; right:-28px; top:28px; width:46px; height:46px; border:6px solid var(--cup-border);
+    border-radius:50%;}
+  .coffee{ position:absolute; inset:auto 0 0 0; height:0%; background:linear-gradient(180deg,#7a553f,#583e2f);
+    transition:height .7s cubic-bezier(.2,.9,.2,1.05)}
+  .pick{display:flex; align-items:center; gap:8px; margin-top:8px; font-weight:600; border:1px dashed #e5e8ee; padding:6px 9px; border-radius:10px; color:var(--muted)}
+  kbd{background:#f1f3f7; padding:2px 6px; border-radius:6px; border:1px solid #e4e6eb; font-size:12px}
+  [data-theme="dark"] kbd{ background:#151c26; border-color:#2b3445 }
+  .msg{ margin-top:14px; padding:12px; border-radius:12px; background:#f5f8ff; color:#133a72; border:1px solid #d7e3ff; display:none}
+  .msg.show{display:block}
+  .msg.good{background:#eefaf4; border-color:#c6f0d9; color:#0d5d42}
+  .msg.bad{background:#fff1f1; border-color:#ffd7d7; color:#7a1f1f}
+  .shake{animation:shake .35s linear}
+  @keyframes shake { 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} 100%{transform:translateX(0)} }
+  .footer{display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:14px; flex-wrap:wrap; color:var(--muted); font-size:13px}
+  .link{color:var(--brand); text-decoration:none; font-weight:600}
+  .hidden{display:none !important}
+</style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="Coffee Cup Game">
-    <header>
-      <div class="title">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 10h14a3 3 0 010 6h-1a5 5 0 01-5 5H9a5 5 0 01-5-5V10z" stroke="#3a7bd5" stroke-width="1.6" />
-          <path d="M18 12h1a2 2 0 010 4h-1" stroke="#3a7bd5" stroke-width="1.6"/>
-          <path d="M8 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6M12 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6" stroke="#3a7bd5" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-        <h1>Coffee Cup Game</h1>
-      </div>
-      <div class="actions">
-        <button id="btn-again" class="ghost" aria-label="Play again">↻ Play again</button>
-        <button id="btn-share" class="primary" aria-label="Copy share text">Share</button>
-      </div>
-    </header>
-
-    <p class="subtitle rule">Pick the cup that best fits a <strong>busy Monday kick‑off</strong>.</p>
-
-    <main>
-      <div id="grid" class="grid" aria-live="polite"></div>
-      <div id="msg" class="msg" role="status" aria-live="polite"></div>
-    </main>
-
-    <div class="footer">
-      <span>Tip: press <b>A</b>, <b>B</b> or <b>C</b> on your keyboard.</span>
-      <a class="link" href="#" id="link-how">How it works</a>
+<div class="app" role="application" aria-label="Coffee Cup Game Plus">
+  <header>
+    <div class="title">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 10h14a3 3 0 010 6h-1a5 5 0 01-5 5H9a5 5 0 01-5-5V10z" stroke="#3a7bd5" stroke-width="1.6" />
+        <path d="M18 12h1a2 2 0 010 4h-1" stroke="#3a7bd5" stroke-width="1.6"/>
+        <path d="M8 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6M12 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6" stroke="#3a7bd5" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <h1>Coffee Cup Game</h1>
     </div>
+    <div class="meta">
+      <span class="pill" id="lang-pill">EN</span>
+      <span class="pill" id="high-pill">🏆 <span id="high">0</span></span>
+    </div>
+    <div class="actions">
+      <select id="lang">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+      <button id="btn-theme" class="ghost" aria-label="Toggle theme">🌓</button>
+      <button id="btn-again" class="ghost" aria-label="Play again">↻</button>
+      <button id="btn-share" class="primary" aria-label="Copy share link">Share</button>
+    </div>
+  </header>
+
+  <p class="rule" id="rule">Pick the cup that best fits a <strong>busy Monday kick‑off</strong>.</p>
+
+  <div class="hud">
+    <div class="score" id="score">Round 1/5 • Score 0</div>
+    <div class="timer"><div class="bar" id="bar"></div></div>
   </div>
 
-  <script>
-    // --------- Data / shuffle ----------
-    const labels = [
-      {label:"Monday", capacity:"large", hint:"Big day ahead.", correct:true},
-      {label:"Decaf", capacity:"small", hint:"Maybe not today.", correct:false},
-      {label:"Meeting", capacity:"medium", hint:"Close, but not enough caffeine.", correct:false}
-    ];
+  <main>
+    <div id="grid" class="grid" aria-live="polite"></div>
+    <div id="msg" class="msg" role="status" aria-live="polite"></div>
+  </main>
 
-    const gridEl = document.getElementById('grid');
-    const msgEl  = document.getElementById('msg');
-    const again  = document.getElementById('btn-again');
-    const share  = document.getElementById('btn-share');
-    const linkHow = document.getElementById('link-how');
+  <div class="footer">
+    <span id="tip">Tip: press <b>A</b>, <b>B</b> or <b>C</b> on your keyboard.</span>
+    <a class="link" href="#" id="link-how">How it works</a>
+  </div>
+</div>
 
-    let cups = []; // [{id:'A'|'B'|'C', label, capacity, is_correct, hint}]
-    let locked = false;
-
-    function shuffle(arr){
-      let a = arr.slice();
-      for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-      return a;
+<script>
+(function(){
+  const i18n = {
+    en: {
+      rule: "Pick the cup that best fits: ",
+      tip: "Tip: press A, B or C on your keyboard.",
+      rounds: (r,t,s)=>`Round ${r}/${t} • Score ${s}`,
+      how: 'Click a cup (or press A/B/C). Answer before the bar empties. 1 point per correct pick.',
+      share: (s,t)=>`Coffee Cup Game ☕ I scored ${s}/${t}! Play here:`,
+      scenarios: [
+        {key:"monday", prompt:"a busy Monday kick‑off", cups:[
+          {label:"Monday", cap:"large", hint:"Big day ahead.", correct:true},
+          {label:"Decaf", cap:"small", hint:"Maybe not today.", correct:false},
+          {label:"Meeting", cap:"medium", hint:"Close, but not enough caffeine.", correct:false}
+        ]},
+        {key:"deploy", prompt:"a late‑night deploy", cups:[
+          {label:"Double Shot", cap:"large", hint:"You’ll need it.", correct:true},
+          {label:"Herbal Tea", cap:"tiny", hint:"Too soft.", correct:false},
+          {label:"Decaf", cap:"small", hint:"Not tonight.", correct:false}
+        ]},
+        {key:"focus", prompt:"a deep‑focus session", cups:[
+          {label:"Americano", cap:"medium", hint:"Smooth but strong.", correct:true},
+          {label:"Iced Latte", cap:"light", hint:"More vibes than focus.", correct:false},
+          {label:"Hot Chocolate", cap:"sweet", hint:"Sugar ≠ focus.", correct:false}
+        ]},
+        {key:"retro", prompt:"a long retrospective", cups:[
+          {label:"Cappuccino", cap:"medium", hint:"Balanced pick.", correct:true},
+          {label:"Espresso Ristretto", cap:"tiny", hint:"Too short for long talks.", correct:false},
+          {label:"Macchiato", cap:"small", hint:"Not enough fuel.", correct:false}
+        ]},
+        {key:"travel", prompt:"an early flight day", cups:[
+          {label:"To‑Go Cup", cap:"large", hint:"Travel friendly.", correct:true},
+          {label:"Ceramic Mug", cap:"home", hint:"Not ideal on the move.", correct:false},
+          {label:"Tea", cap:"light", hint:"Gentle start, but…", correct:false}
+        ]},
+        {key:"meetings", prompt:"back‑to‑back meetings", cups:[
+          {label:"Refillable Mug", cap:"large", hint:"Keeps you going.", correct:true},
+          {label:"Decaf", cap:"low", hint:"You’ll fade.", correct:false},
+          {label:"Espresso", cap:"shot", hint:"Too spiky, not lasting.", correct:false}
+        ]}
+      ],
+      verdictGood:"✔️ Correct!",
+      verdictBad:"❌ Not this one.",
+      expGood:(l)=>`“${l}” is the right match.`,
+      expBad:(h)=>`Hint: ${h}`,
+      final:(s,t)=>`Game over — Score ${s}/${t}`
+    },
+    fr: {
+      rule: "Choisis la tasse la plus adaptée à : ",
+      tip: "Astuce : utilise A, B ou C au clavier.",
+      rounds: (r,t,s)=>`Manche ${r}/${t} • Score ${s}`,
+      how: "Clique sur une tasse (ou A/B/C). Réponds avant la fin de la barre. 1 point par bonne réponse.",
+      share: (s,t)=>`Coffee Cup Game ☕ J’ai fait ${s}/${t} ! Joue ici :`,
+      scenarios: [
+        {key:"monday", prompt:"un lundi bien chargé", cups:[
+          {label:"Lundi", cap:"grande", hint:"Grosse journée.", correct:true},
+          {label:"Décaféiné", cap:"petite", hint:"Peut‑être pas aujourd’hui.", correct:false},
+          {label:"Réunion", cap:"moyenne", hint:"Pas assez de caféine.", correct:false}
+        ]},
+        {key:"deploy", prompt:"un déploiement tard le soir", cups:[
+          {label:"Double Shot", cap:"grande", hint:"Tu vas en avoir besoin.", correct:true},
+          {label:"Tisane", cap:"petite", hint:"Trop doux.", correct:false},
+          {label:"Décaféiné", cap:"petite", hint:"Pas ce soir.", correct:false}
+        ]},
+        {key:"focus", prompt:"une session de concentration", cups:[
+          {label:"Americano", cap:"moyenne", hint:"Doux mais efficace.", correct:true},
+          {label:"Latte glacé", cap:"léger", hint:"Plus style que focus.", correct:false},
+          {label:"Chocolat chaud", cap:"sucré", hint:"Le sucre ≠ focus.", correct:false}
+        ]},
+        {key:"retro", prompt:"une rétrospective longue", cups:[
+          {label:"Cappuccino", cap:"moyenne", hint:"Équilibré.", correct:true},
+          {label:"Ristretto", cap:"minuscule", hint:"Trop court pour durer.", correct:false},
+          {label:"Macchiato", cap:"petite", hint:"Pas assez de carburant.", correct:false}
+        ]},
+        {key:"travel", prompt:"un vol très matinal", cups:[
+          {label:"À emporter", cap:"grande", hint:"Parfait en déplacement.", correct:true},
+          {label:"Mug céramique", cap:"maison", hint:"Pas pratique en route.", correct:false},
+          {label:"Thé", cap:"léger", hint:"Démarrage doux, mais…", correct:false}
+        ]},
+        {key:"meetings", prompt:"une suite de réunions", cups:[
+          {label:"Mug rechargeable", cap:"grande", hint:"Tiendra la distance.", correct:true},
+          {label:"Décaféiné", cap:"faible", hint:"Tu vas faiblir.", correct:false},
+          {label:"Espresso", cap:"shot", hint:"Trop brutal, pas durable.", correct:false}
+        ]}
+      ],
+      verdictGood:"✔️ Bravo !",
+      verdictBad:"❌ Raté.",
+      expGood:(l)=>`“${l}” est le meilleur choix.`,
+      expBad:(h)=>`Indice : ${h}`,
+      final:(s,t)=>`Fin — Score ${s}/${t}`
     }
+  };
 
-    function init(seed=null){
-      locked=false;
-      msgEl.className='msg'; msgEl.textContent='';
-      gridEl.innerHTML='';
-      const order = shuffle(labels);
-      cups = order.map((it, idx)=>({
-        id: ['A','B','C'][idx],
-        label: it.label,
-        capacity: it.capacity,
-        is_correct: !!it.correct,
-        hint: it.hint
-      }));
-      render();
-      // Persist in URL for share
-      const state = btoa(JSON.stringify(cups.map(c=>({id:c.id,label:c.label,is_correct:c.is_correct}))));
-      history.replaceState(null, '', location.pathname + '?s=' + encodeURIComponent(state));
+  // --- State
+  const TOTAL_ROUNDS = 5;
+  const ROUND_MS = 10000;
+
+  const el = {
+    grid: document.getElementById('grid'),
+    msg: document.getElementById('msg'),
+    score: document.getElementById('score'),
+    rule: document.getElementById('rule'),
+    bar: document.getElementById('bar'),
+    tip: document.getElementById('tip'),
+    share: document.getElementById('btn-share'),
+    again: document.getElementById('btn-again'),
+    how: document.getElementById('link-how'),
+    langSel: document.getElementById('lang'),
+    langPill: document.getElementById('lang-pill'),
+    high: document.getElementById('high'),
+    themeBtn: document.getElementById('btn-theme')
+  };
+
+  let lang = (localStorage.getItem('coffee_lang')||'en');
+  let theme = (localStorage.getItem('coffee_theme')||'light');
+  document.documentElement.setAttribute('data-theme', theme==='dark'?'dark':'light');
+  el.langSel.value = lang;
+  el.langPill.textContent = lang.toUpperCase();
+  el.tip.textContent = i18n[lang].tip;
+  el.high.textContent = localStorage.getItem('coffee_high')||'0';
+
+  let round = 1, score = 0, currentScenario=null, cups=[], timerId=null, barAnim=null;
+
+  function t(key){ return i18n[lang][key]; }
+  function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+  function start(){
+    round = 1; score = 0;
+    nextRound();
+  }
+
+  function nextRound(){
+    clearTimer();
+    currentScenario = rnd(i18n[lang].scenarios);
+    el.rule.innerHTML = `${t('rule')}<strong>${currentScenario.prompt}</strong>.`;
+    el.score.textContent = t('rounds')(round, TOTAL_ROUNDS, score);
+    // Build cups ABC with shuffle
+    cups = shuffle(currentScenario.cups.map((c,idx)=>({
+      id: ['A','B','C'][idx],
+      label: c.label, cap:c.cap, hint:c.hint, correct:c.correct
+    })));
+    renderCups();
+    startTimer();
+  }
+
+  function renderCups(){
+    el.grid.innerHTML='';
+    cups.forEach(c=>{
+      const card = document.createElement('div');
+      card.className='card'; card.dataset.id=c.id;
+      const wrap = document.createElement('div'); wrap.className='cup-wrap';
+      const lab = document.createElement('div'); lab.className='cup-label'; lab.textContent = `${c.id}) ${c.label}`;
+      const cup = document.createElement('div'); cup.className='cup'; cup.setAttribute('role','button');
+      cup.setAttribute('aria-label', `Choose cup ${c.id} ${c.label}`);
+      const fill = document.createElement('div'); fill.className='coffee'; fill.style.height='0%';
+      cup.appendChild(fill);
+      const hint = document.createElement('div'); hint.className='pick'; hint.innerHTML = `<span><kbd>${c.id}</kbd></span>`;
+      wrap.append(lab,cup,hint); card.appendChild(wrap); el.grid.appendChild(card);
+      cup.addEventListener('click', ()=> choose(c.id));
+      card.addEventListener('click', (e)=>{ if(e.target===card) choose(c.id) });
+    });
+  }
+
+  function choose(id){
+    if(!timerId) return; // round ended
+    const c = cups.find(x=>x.id===id);
+    const card = [...document.querySelectorAll('.card')].find(el=>el.dataset.id===id);
+    const fill = card.querySelector('.coffee');
+
+    if(c.correct){
+      score++;
+      fill.style.height = '85%';
+      message(t('verdictGood')+' '+t('expGood')(c.label),'good');
+      freezeRound();
+    }else{
+      card.classList.add('shake');
+      setTimeout(()=>card.classList.remove('shake'), 380);
+      message(t('verdictBad')+' '+t('expBad')(c.hint),'bad');
     }
+  }
 
-    function render(){
-      cups.forEach(c=>{
-        const card = document.createElement('div');
-        card.className='card'; card.dataset.id=c.id;
+  function message(text,type){
+    el.msg.textContent = text;
+    el.msg.className = 'msg show ' + (type==='good'?'good':type==='bad'?'bad':'');
+  }
 
-        const wrap = document.createElement('div');
-        wrap.className='cup-wrap';
-
-        const lab = document.createElement('div');
-        lab.className='cup-label';
-        lab.textContent = `${c.id}) ${c.label}`;
-
-        const cup = document.createElement('div');
-        cup.className='cup'; cup.setAttribute('role','button');
-        cup.setAttribute('aria-label', `Choose cup ${c.id} ${c.label}`);
-        const fill = document.createElement('div');
-        fill.className='coffee'; fill.style.height='0%';
-        cup.appendChild(fill);
-
-        const hint = document.createElement('div');
-        hint.className='pick';
-        hint.innerHTML = `<span>Pick <kbd>${c.id}</kbd></span>`;
-
-        wrap.append(lab, cup, hint);
-        card.appendChild(wrap);
-        gridEl.appendChild(card);
-
-        cup.addEventListener('click', ()=> choose(c.id));
-        card.addEventListener('click', (e)=>{ if(e.target===card) choose(c.id) });
-      });
-      document.querySelectorAll('.card')[0]?.classList.add('selected');
-    }
-
-    function choose(id){
-      if(locked) return;
-      const c = cups.find(x=>x.id===id);
-      const card = [...document.querySelectorAll('.card')].find(el=>el.dataset.id===id);
-      const cup  = card.querySelector('.cup');
-      const fill = card.querySelector('.coffee');
-
-      if(c.is_correct){
-        locked = true;
-        fill.style.height = '85%';
-        msg('✔️ Correct! The large Monday cup is the right way to kick off a busy week.', 'good');
-        // mute other cups
-        document.querySelectorAll('.card').forEach(el=>{
-          if(el!==card){ el.style.opacity=.55; el.style.filter='grayscale(0.2)'; }
-        });
+  function startTimer(){
+    let start = performance.now();
+    const dur = ROUND_MS;
+    el.bar.style.width='100%';
+    timerId = requestAnimationFrame(function tick(now){
+      const p = Math.min(1, (now-start)/dur);
+      el.bar.style.width = `${100*(1-p)}%`;
+      if(p < 1){
+        timerId = requestAnimationFrame(tick);
       }else{
-        card.classList.add('shake');
-        setTimeout(()=>card.classList.remove('shake'), 380);
-        msg(`❌ Not this one. Hint: ${c.hint}`, 'bad');
-      }
-    }
-
-    function msg(text,type){
-      msgEl.textContent = text;
-      msgEl.className = 'msg show ' + (type==='good'?'good':type==='bad'?'bad':'');
-    }
-
-    // Keyboard A/B/C
-    window.addEventListener('keydown', (e)=>{
-      const k = e.key.toUpperCase();
-      if(['A','B','C'].includes(k)) choose(k);
-    });
-
-    // Share
-    share.addEventListener('click', async ()=>{
-      const url = location.href;
-      const text = `Coffee Cup Game ☕ Pick the best cup for a busy Monday:\n${url}`;
-      try{
-        if(navigator.share){
-          await navigator.share({title:'Coffee Cup Game', text, url});
-        }else{
-          await navigator.clipboard.writeText(url);
-          msg('🔗 Link copied to clipboard. Share it!', 'good');
-        }
-      }catch{
-        await navigator.clipboard.writeText(url);
-        msg('🔗 Link copied to clipboard. Share it!', 'good');
+        // time out
+        message(t('verdictBad')+' '+t('expBad')(currentScenario.cups.find(x=>x.correct).hint),'bad');
+        freezeRound();
       }
     });
+  }
 
-    // Play again
-    again.addEventListener('click', ()=> init());
+  function clearTimer(){
+    if(timerId){ cancelAnimationFrame(timerId); timerId=null; }
+  }
 
-    // How it works
-    linkHow.addEventListener('click', (e)=>{
-      e.preventDefault();
-      alert('Click on a cup (or press A/B/C). Only the large "Monday" cup is correct. Share the link so others can play the same round.');
-    });
+  function freezeRound(){
+    clearTimer();
+    setTimeout(()=>{
+      if(round < TOTAL_ROUNDS){
+        round++; nextRound();
+      }else{
+        endGame();
+      }
+    }, 900);
+  }
 
-    // Restore from URL state if present
-    (function restore(){
-      const qs = new URLSearchParams(location.search);
-      const s = qs.get('s');
-      if(!s){ init(); return; }
-      try{
-        const decoded = JSON.parse(atob(decodeURIComponent(s)));
-        // Map back to cups, ensure Monday is the only correct one
-        const map = decoded.map((d,i)=>({
-          id:['A','B','C'][i], label:d.label,
-          capacity: d.label==='Monday'?'large': (d.label==='Decaf'?'small':'medium'),
-          is_correct: d.label==='Monday',
-          hint: d.label==='Decaf' ? 'Maybe not today.' : (d.label==='Meeting' ? 'Close, but not enough caffeine.' : 'Big day ahead.')
-        }));
-        cups = map; render();
-      }catch(e){ init(); }
-    })();
-  </script>
+  function endGame(){
+    el.score.textContent = t('final')(score, TOTAL_ROUNDS);
+    const best = Math.max(score, parseInt(localStorage.getItem('coffee_high')||'0',10));
+    localStorage.setItem('coffee_high', best);
+    el.high.textContent = best;
+  }
+
+  // Keyboard
+  window.addEventListener('keydown', (e)=>{
+    const k = e.key.toUpperCase();
+    if(['A','B','C'].includes(k)) choose(k);
+  });
+
+  // Buttons
+  document.getElementById('btn-again').addEventListener('click', ()=> start());
+  document.getElementById('btn-share').addEventListener('click', async ()=>{
+    const url = location.href;
+    const text = `${i18n[lang].share(score, TOTAL_ROUNDS)} ${url}`;
+    try{
+      if(navigator.share){ await navigator.share({title:'Coffee Cup Game', text, url}); }
+      else { await navigator.clipboard.writeText(text); message('🔗 Copied to clipboard.', 'good'); }
+    }catch{ await navigator.clipboard.writeText(text); message('🔗 Copied to clipboard.', 'good'); }
+  });
+  document.getElementById('link-how').addEventListener('click', (e)=>{ e.preventDefault(); alert(i18n[lang].how); });
+
+  // Language & Theme
+  el.langSel.addEventListener('change', ()=>{
+    lang = el.langSel.value;
+    localStorage.setItem('coffee_lang', lang);
+    el.langPill.textContent = lang.toUpperCase();
+    el.tip.textContent = i18n[lang].tip;
+    start(); // restart to reload scenarios text
+  });
+  el.themeBtn.addEventListener('click', ()=>{
+    theme = (theme==='dark'?'light':'dark');
+    localStorage.setItem('coffee_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme==='dark'?'dark':'light');
+  });
+
+  // Go
+  start();
+})();
+</script>
 </body>
 </html>
