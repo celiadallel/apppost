@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Coffee Cup Game ☕</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg:#f7f7fb; --ink:#222; --muted:#6b6f76;
+      --brand:#3a7bd5; --good:#17a673; --bad:#cc3d3d;
+      --cup:#ffffff; --cup-border:#dadde3; --coffee:#6f4e37;
+      --card:#ffffff; --shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+      color:var(--ink); background:linear-gradient(180deg,#f9fafc, var(--bg));
+      min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .app{
+      width:min(980px,100%); background:var(--card); border-radius:20px; box-shadow:var(--shadow);
+      padding:24px; overflow:hidden;
+    }
+    header{display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap}
+    .title{display:flex; align-items:center; gap:12px}
+    .title h1{font-size:22px; margin:0}
+    .subtitle{color:var(--muted); font-size:14px}
+    .rule{margin:8px 0 0}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    button{
+      appearance:none; border:1px solid #dce0e6; background:#fff; color:var(--ink);
+      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
+    }
+    button.primary{background:var(--brand); color:#fff; border-color:transparent}
+    button.ghost{background:#fff}
+    main{margin-top:20px}
+    .grid{
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px;
+    }
+    @media (max-width:720px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      background:#fff; border:1px solid #eceff3; border-radius:16px; padding:18px;
+      box-shadow:var(--shadow); transition:transform .2s ease, border-color .2s ease;
+    }
+    .card:hover{transform:translateY(-3px); border-color:#dfe3ea}
+    .cup-wrap{display:flex; flex-direction:column; align-items:center; gap:10px}
+    .cup-label{font-weight:700; letter-spacing:.2px}
+    .cup{
+      width:160px; height:120px; border:2px solid var(--cup-border); border-bottom-left-radius:18px; border-bottom-right-radius:18px;
+      border-top-left-radius:12px; border-top-right-radius:12px; position:relative; background:var(--cup);
+      overflow:hidden;
+    }
+    .cup::after{ /* handle */
+      content:""; position:absolute; right:-28px; top:28px; width:46px; height:46px; border:6px solid var(--cup-border);
+      border-radius:50%; background:transparent;
+    }
+    .coffee{
+      position:absolute; inset:auto 0 0 0; height:0%;
+      background:linear-gradient(180deg,#7a553f,#583e2f);
+      transition:height .7s cubic-bezier(.2,.9,.2,1.05);
+    }
+
+    .pick{
+      display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px;
+      font-weight:600; border:1px dashed #e5e8ee; padding:8px 10px; border-radius:10px; color:var(--muted);
+    }
+    .pick kbd{background:#f1f3f7; padding:2px 6px; border-radius:6px; border:1px solid #e4e6eb; font-size:12px}
+    .selected{outline:3px solid rgba(58,123,213,.25)}
+
+    .msg{
+      margin-top:18px; padding:14px; border-radius:12px; background:#f5f8ff; color:#133a72; border:1px solid #d7e3ff;
+      display:none;
+    }
+    .msg.show{display:block}
+    .msg.good{background:#eefaf4; border-color:#c6f0d9; color:#0d5d42}
+    .msg.bad{background:#fff1f1; border-color:#ffd7d7; color:#7a1f1f}
+
+    .shake{animation:shake .35s linear}
+    @keyframes shake { 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} 100%{transform:translateX(0)} }
+
+    .footer{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:16px; flex-wrap:wrap;
+      color:var(--muted); font-size:13px
+    }
+    .link{color:var(--brand); text-decoration:none; font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="Coffee Cup Game">
+    <header>
+      <div class="title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 10h14a3 3 0 010 6h-1a5 5 0 01-5 5H9a5 5 0 01-5-5V10z" stroke="#3a7bd5" stroke-width="1.6" />
+          <path d="M18 12h1a2 2 0 010 4h-1" stroke="#3a7bd5" stroke-width="1.6"/>
+          <path d="M8 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6M12 4c0 1 .6 1.6 1 2 .5.4 1 .9 1 1.6" stroke="#3a7bd5" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <h1>Coffee Cup Game</h1>
+      </div>
+      <div class="actions">
+        <button id="btn-again" class="ghost" aria-label="Play again">↻ Play again</button>
+        <button id="btn-share" class="primary" aria-label="Copy share text">Share</button>
+      </div>
+    </header>
+
+    <p class="subtitle rule">Pick the cup that best fits a <strong>busy Monday kick‑off</strong>.</p>
+
+    <main>
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
+    </main>
+
+    <div class="footer">
+      <span>Tip: press <b>A</b>, <b>B</b> or <b>C</b> on your keyboard.</span>
+      <a class="link" href="#" id="link-how">How it works</a>
+    </div>
+  </div>
+
+  <script>
+    // --------- Data / shuffle ----------
+    const labels = [
+      {label:"Monday", capacity:"large", hint:"Big day ahead.", correct:true},
+      {label:"Decaf", capacity:"small", hint:"Maybe not today.", correct:false},
+      {label:"Meeting", capacity:"medium", hint:"Close, but not enough caffeine.", correct:false}
+    ];
+
+    const gridEl = document.getElementById('grid');
+    const msgEl  = document.getElementById('msg');
+    const again  = document.getElementById('btn-again');
+    const share  = document.getElementById('btn-share');
+    const linkHow = document.getElementById('link-how');
+
+    let cups = []; // [{id:'A'|'B'|'C', label, capacity, is_correct, hint}]
+    let locked = false;
+
+    function shuffle(arr){
+      let a = arr.slice();
+      for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+      return a;
+    }
+
+    function init(seed=null){
+      locked=false;
+      msgEl.className='msg'; msgEl.textContent='';
+      gridEl.innerHTML='';
+      const order = shuffle(labels);
+      cups = order.map((it, idx)=>({
+        id: ['A','B','C'][idx],
+        label: it.label,
+        capacity: it.capacity,
+        is_correct: !!it.correct,
+        hint: it.hint
+      }));
+      render();
+      // Persist in URL for share
+      const state = btoa(JSON.stringify(cups.map(c=>({id:c.id,label:c.label,is_correct:c.is_correct}))));
+      history.replaceState(null, '', location.pathname + '?s=' + encodeURIComponent(state));
+    }
+
+    function render(){
+      cups.forEach(c=>{
+        const card = document.createElement('div');
+        card.className='card'; card.dataset.id=c.id;
+
+        const wrap = document.createElement('div');
+        wrap.className='cup-wrap';
+
+        const lab = document.createElement('div');
+        lab.className='cup-label';
+        lab.textContent = `${c.id}) ${c.label}`;
+
+        const cup = document.createElement('div');
+        cup.className='cup'; cup.setAttribute('role','button');
+        cup.setAttribute('aria-label', `Choose cup ${c.id} ${c.label}`);
+        const fill = document.createElement('div');
+        fill.className='coffee'; fill.style.height='0%';
+        cup.appendChild(fill);
+
+        const hint = document.createElement('div');
+        hint.className='pick';
+        hint.innerHTML = `<span>Pick <kbd>${c.id}</kbd></span>`;
+
+        wrap.append(lab, cup, hint);
+        card.appendChild(wrap);
+        gridEl.appendChild(card);
+
+        cup.addEventListener('click', ()=> choose(c.id));
+        card.addEventListener('click', (e)=>{ if(e.target===card) choose(c.id) });
+      });
+      document.querySelectorAll('.card')[0]?.classList.add('selected');
+    }
+
+    function choose(id){
+      if(locked) return;
+      const c = cups.find(x=>x.id===id);
+      const card = [...document.querySelectorAll('.card')].find(el=>el.dataset.id===id);
+      const cup  = card.querySelector('.cup');
+      const fill = card.querySelector('.coffee');
+
+      if(c.is_correct){
+        locked = true;
+        fill.style.height = '85%';
+        msg('✔️ Correct! The large Monday cup is the right way to kick off a busy week.', 'good');
+        // mute other cups
+        document.querySelectorAll('.card').forEach(el=>{
+          if(el!==card){ el.style.opacity=.55; el.style.filter='grayscale(0.2)'; }
+        });
+      }else{
+        card.classList.add('shake');
+        setTimeout(()=>card.classList.remove('shake'), 380);
+        msg(`❌ Not this one. Hint: ${c.hint}`, 'bad');
+      }
+    }
+
+    function msg(text,type){
+      msgEl.textContent = text;
+      msgEl.className = 'msg show ' + (type==='good'?'good':type==='bad'?'bad':'');
+    }
+
+    // Keyboard A/B/C
+    window.addEventListener('keydown', (e)=>{
+      const k = e.key.toUpperCase();
+      if(['A','B','C'].includes(k)) choose(k);
+    });
+
+    // Share
+    share.addEventListener('click', async ()=>{
+      const url = location.href;
+      const text = `Coffee Cup Game ☕ Pick the best cup for a busy Monday:\n${url}`;
+      try{
+        if(navigator.share){
+          await navigator.share({title:'Coffee Cup Game', text, url});
+        }else{
+          await navigator.clipboard.writeText(url);
+          msg('🔗 Link copied to clipboard. Share it!', 'good');
+        }
+      }catch{
+        await navigator.clipboard.writeText(url);
+        msg('🔗 Link copied to clipboard. Share it!', 'good');
+      }
+    });
+
+    // Play again
+    again.addEventListener('click', ()=> init());
+
+    // How it works
+    linkHow.addEventListener('click', (e)=>{
+      e.preventDefault();
+      alert('Click on a cup (or press A/B/C). Only the large "Monday" cup is correct. Share the link so others can play the same round.');
+    });
+
+    // Restore from URL state if present
+    (function restore(){
+      const qs = new URLSearchParams(location.search);
+      const s = qs.get('s');
+      if(!s){ init(); return; }
+      try{
+        const decoded = JSON.parse(atob(decodeURIComponent(s)));
+        // Map back to cups, ensure Monday is the only correct one
+        const map = decoded.map((d,i)=>({
+          id:['A','B','C'][i], label:d.label,
+          capacity: d.label==='Monday'?'large': (d.label==='Decaf'?'small':'medium'),
+          is_correct: d.label==='Monday',
+          hint: d.label==='Decaf' ? 'Maybe not today.' : (d.label==='Meeting' ? 'Close, but not enough caffeine.' : 'Big day ahead.')
+        }));
+        cups = map; render();
+      }catch(e){ init(); }
+    })();
+  </script>
+</body>
+</html>
